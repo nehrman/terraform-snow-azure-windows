@@ -19,7 +19,8 @@ pipeline {
                 }
             }
             steps {
-                apk-get git curl gunzip                
+                apk update && apk upgrade
+                apk add git curl gunzip                
             }
         }
 
