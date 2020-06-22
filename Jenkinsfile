@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         TF_TOKEN = ""
-        TF_URL = ""
+        TF_URL = "https://app.terraform.io/v2/"
     } 
     
     stages {
@@ -24,7 +24,6 @@ pipeline {
             }
         }
 
-    stages {
         stage('Preparing Terraform Enterprise Workspace') {
             agent {
                 docker {
@@ -37,12 +36,20 @@ pipeline {
         }
 
         stage('Launching Terraform Plan') {
+            agent {
+                docker {
+                    reuseNode true
+                }
             steps {
 
             }
         }
         
         stage('Launching Terraform Apply') {
+            agent {
+                docker {
+                    reuseNode true
+                }
             steps {
 
             }
