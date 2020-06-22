@@ -19,8 +19,10 @@ pipeline {
                 }
             }
             steps {
+                sh '''
                 apk update && apk upgrade
-                apk add git curl gunzip                
+                apk add git curl gunzip
+                '''                
             }
         }
 
@@ -31,7 +33,7 @@ pipeline {
                 }
                 
             steps {
-
+                sh 'echo "Hello"'
             }
         }
 
@@ -41,7 +43,7 @@ pipeline {
                     reuseNode true
                 }
             steps {
-
+                sh 'echo "Hello"'
             }
         }
         
@@ -51,7 +53,7 @@ pipeline {
                     reuseNode true
                 }
             steps {
-
+                sh 'echo "Hello"'
             }
         }
 
