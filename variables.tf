@@ -42,7 +42,8 @@ variable "address_space" {
 
 variable "subnet_prefix" {
   description = "The address prefix to use for the subnet."
-  default     = "10.0.10.0/24"
+  type = list
+  default     = ["10.0.10.0/24"]
 }
 
 variable "storage_account_tier" {
@@ -104,3 +105,4 @@ variable "availabilityset" {
   description = "Use an Availibilty Set or not"
   default     = true
 }
+
