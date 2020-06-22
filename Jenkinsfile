@@ -1,10 +1,6 @@
 pipeline {
 
-    agent {
-        docker {
-            image 'alpine:latest'
-        }
-    }
+    agent none
 
     environment {
         TF_TOKEN = ""
