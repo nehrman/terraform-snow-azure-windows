@@ -32,7 +32,8 @@ pipeline {
             agent {
                 docker {
                     reuseNode true
-                }
+                }``
+            }
                 
             steps {
                 sh 'echo "Hello"'
@@ -45,6 +46,8 @@ pipeline {
                 docker {
                     reuseNode true
                 }
+            }
+
             steps {
                 sh 'echo "Hello"'
             }
@@ -66,6 +69,4 @@ pipeline {
 
     }
 
-}
-    }
 }
