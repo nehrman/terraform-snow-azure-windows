@@ -25,7 +25,7 @@ pipeline {
                 apk add git curl gunzip
                 '''                
             }
-            
+
         }
 
         stage('Preparing Terraform Enterprise Workspace') {
@@ -66,4 +66,6 @@ pipeline {
 
     }
 
+}
+    }
 }
