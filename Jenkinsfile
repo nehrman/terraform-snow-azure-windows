@@ -1,6 +1,11 @@
 pipeline {
 
-    agent none
+    agent {
+        docker {
+            image 'alpine:latest'
+            args '-v $HOME/tf:root/tf'
+        }
+    }
 
     environment {
         TF_TOKEN = ""
@@ -9,12 +14,6 @@ pipeline {
     
     stages {
         stage('Preparing Environment') {
-            agent {
-                docker {
-                    image 'alpine:latest'
-                    reuseNode true
-                }
-            }
 
             steps {
                 sh '''
@@ -26,12 +25,6 @@ pipeline {
         }
 
         stage('Preparing Terraform Enterprise Workspace') {
-            agent {
-                docker {
-                    image 'alpine:latest'
-                    reuseNode true
-                }
-            }
                 
             steps {
                 sh 'echo "Hello"'
@@ -40,12 +33,6 @@ pipeline {
         }
 
         stage('Launching Terraform Plan') {
-            agent {
-                docker {
-                    image 'alpine:latest'
-                    reuseNode true
-                }
-            }
 
             steps {
                 sh 'echo "Hello"'
@@ -54,12 +41,6 @@ pipeline {
         }
         
         stage('Launching Terraform Apply') {
-            agent {
-                docker {
-                    image 'alpine:latest'
-                    reuseNode true
-                }
-            }
 
             steps {
                 sh 'echo "Hello"'
