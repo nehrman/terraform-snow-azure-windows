@@ -15,6 +15,7 @@ pipeline {
         stage('Preparing Environment') {
             agent {
                 docker {
+                    image 'alpine:latest'
                     reuseNode true
                 }
             }
@@ -31,6 +32,7 @@ pipeline {
         stage('Preparing Terraform Enterprise Workspace') {
             agent {
                 docker {
+                    image 'alpine:latest'
                     reuseNode true
                 }
             }
@@ -44,6 +46,7 @@ pipeline {
         stage('Launching Terraform Plan') {
             agent {
                 docker {
+                    image 'alpine:latest'
                     reuseNode true
                 }
             }
@@ -57,6 +60,7 @@ pipeline {
         stage('Launching Terraform Apply') {
             agent {
                 docker {
+                    image 'alpine:latest'
                     reuseNode true
                 }
             }
