@@ -32,7 +32,7 @@ pipeline {
             agent {
                 docker {
                     reuseNode true
-                }``
+                }
             }
                 
             steps {
