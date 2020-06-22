@@ -42,7 +42,7 @@ output "vm_name" {
   description = "Name of Virtual Machines created by terraform"
 }
 
-output "vm_public_ip" {
+output "vm_public_ip_address" {
   value = "${azurerm_public_ip.windows-pip.*.ip_address}"
   description = "Public IP Addresses of Virtual Machines created by terraform"
 }
