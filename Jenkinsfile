@@ -18,12 +18,14 @@ pipeline {
                     reuseNode true
                 }
             }
+
             steps {
                 sh '''
                 apk update && apk upgrade
                 apk add git curl gunzip
                 '''                
             }
+            
         }
 
         stage('Preparing Terraform Enterprise Workspace') {
@@ -35,6 +37,7 @@ pipeline {
             steps {
                 sh 'echo "Hello"'
             }
+        
         }
 
         stage('Launching Terraform Plan') {
@@ -45,6 +48,7 @@ pipeline {
             steps {
                 sh 'echo "Hello"'
             }
+
         }
         
         stage('Launching Terraform Apply') {
@@ -52,9 +56,12 @@ pipeline {
                 docker {
                     reuseNode true
                 }
+            }
+
             steps {
                 sh 'echo "Hello"'
             }
+
         }
 
     }
