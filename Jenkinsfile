@@ -13,6 +13,7 @@ pipeline {
         TF_URL = "https://app.terraform.io/api/v2"
         TF_WORKSPACE = "neh-test-jenkins"
         GIT_URL = "https://github.com/nehrman/terraform-snow-azure-windows"
+        TF_VERSION = "0.12.26"
     } 
     
     stages {
@@ -45,7 +46,7 @@ pipeline {
                            "type": "workspaces"
                        }
                     }
-                  EOF
+EOF
                 '''
                 sh '''
                   tee $WORKSPACE/templates/variable_tmpl.json << EOF
@@ -69,7 +70,7 @@ pipeline {
                           }
                       }
                     }
-                  EOF
+EOF
                 '''
                 sh'''
                   tee $WORKSPACE/templates/run_tmpl.json << EOF
@@ -89,7 +90,7 @@ pipeline {
                           }
                       }   
                     }
-                  EOF
+EOF
                 '''
                 sh'''
                   tee $WORKSPACE/templates/workspace_tmpl.json << EOF
@@ -102,7 +103,7 @@ pipeline {
                           "type": "workspaces"
                        }
                     }
-                  EOF
+EOF
                 '''
                 sh'''
                   set +e
@@ -113,7 +114,7 @@ pipeline {
                     ARM_SUBSCRIPTION_ID,$ARM_SUBSCRIPTION_ID,env,false,false
                     ARM_TENANT_ID,$ARM_TENANT_ID,env,false,false
                     env,dev,terraform,false,false
-                  EOF
+EOF
                 '''
                 sh'''
                 tee $WORKSPACE/configversion.json << EOF
@@ -125,7 +126,7 @@ pipeline {
                           }
                     }
                   }
-                EOF
+EOF
                 '''           
                 
             }
