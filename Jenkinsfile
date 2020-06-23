@@ -2,14 +2,17 @@ pipeline {
 
     agent {
         docker {
-            image 'alpine:latest'
+            image 'debian:jessie'
             args '-v $HOME/tf:root/tf'
         }
     }
 
     environment {
-        TF_TOKEN = ""
+        TFE_TOKEN = ""
+        TFE_ORG = ""
         TF_URL = "https://app.terraform.io/v2/"
+        WORKSPACE = "neh-test-jenkins"
+        GIT_URL = ""
     } 
     
     stages {
@@ -17,9 +20,107 @@ pipeline {
 
             steps {
                 sh '''
-                apk update && apk upgrade
-                apk add git curl gunzip
+                apt-get update && apt-get -y upgrade
+                apt-get install -y git curl gunzip
+                git clone ${GIT_URL}
                 '''                
+            }
+
+        }
+
+        stages {
+        stage('Preparing Files Templates for Terraform Enterprise') {
+
+            steps {
+                sh '''
+                mkdir templates
+                tee ./templates/workspace_tmpl.json <<EOF
+                {
+                    "data": {
+                        "attributes": {
+                            "name": "placeholder",
+                            "terraform_version": "$TF_VERSION"
+                        },
+                        "type": "workspaces"
+                    }
+                }
+                EOF
+
+                tee ./templates/variable_tmpl.json <<EOF
+                {
+                    "data": {
+                        "type":"vars",
+                        "attributes": {
+                            "key":"my-key",
+                            "value":"my-value",
+                            "category":"my-category",
+                            "hcl":my-hcl,
+                            "sensitive":my-sensitive
+                        }
+                    },
+                    "filter": {
+                        "organization": {
+                            "username":"my-organization"
+                        },
+                        "workspace": {
+                            "name":"my-workspace"
+                        }
+                    }
+                }
+                EOF
+
+                tee ./templates/run_tmpl.json <<EOF
+                {
+                    "data": {
+                        "attributes": {
+                            "is-destroy":false
+                        },
+                        "type":"runs",
+                        "relationships": {
+                            "workspace": {
+                                "data": {
+                                    "type": "workspaces",
+                                    "id": "workspace_id"
+                                }
+                            }
+                        }
+                    }   
+                }
+                EOF
+
+                tee ./templates/workspace_tmpl.json <<EOF
+                {
+                    "data": {
+                        "attributes": {
+                            "name": "$TF_PREFIX$env",
+                            "terraform_version": "$TF_VERSION"
+                        },
+                        "type": "workspaces"
+                    }
+                }
+                EOF
+
+                mkdir variables
+
+                tee ./variables/variables_file.csv <<EOF
+                ARM_CLIENT_ID,$ARM_CLIENT_ID,env,false,false
+                ARM_CLIENT_SECRET,$ARM_CLIENT_SECRET,env,false,true
+                ARM_SUBSCRIPTION_ID,$ARM_SUBSCRIPTION_ID,env,false,false
+                ARM_TENANT_ID,$ARM_TENANT_ID,env,false,false
+                env,dev,terraform,false,false
+                EOF
+
+                tee ./configversion.json <<EOF
+                {
+                    "data": {
+                        "type": "configuration-versions",
+                        "attributes": {
+                            "auto-queue-runs": false
+                        }
+                    }
+                }
+                EOF 
+                '''           
             }
 
         }
@@ -27,7 +128,42 @@ pipeline {
         stage('Preparing Terraform Enterprise Workspace') {
                 
             steps {
-                sh 'echo "Hello"'
+                sh '''
+                echo "Checking if Workspace already exists"
+                CHECK_WORKSPACE_RESULT='(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" "${TF_HOSTNAME}/organizations/${TF_ORGANIZATION}/workspaces/${WORKSPACE}"       ) 
+                TF_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | jq -r '.data.id')"
+                
+
+                if [ -z "$TF_WORKSPACE_ID"]; then
+                    echo "Workspace doesn't exist so it will be created"
+                    sed "s/placeholder/${WORKSPACE}/" < ./templates/workspace.template.json > ./workspace.json
+                    TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@./workspace.json" "${TF_HOSTNAME}/organizations/${TF_ORGANIZATION}/workspaces" | jq -r '.data.id')"
+                else
+                    echo "Workspace Already Exist"
+                fi
+
+                echo "Configuring Variables at Workspace Level"
+                while IFS=',' read -r key value category hcl sensitive
+                do
+                sed -e "s/my_workspace/${TF_WORKSPACE_ID}/" -e "s/my_key/$key/" -e "s/my_value/$value/" -e "s/my_category/$category/" -e "s/my_hcl/$hcl/" -e "s/my_sensitive/$sensitive/" < ./templates/variables_tmpl.json  > ./variables/variables.json
+                cat ./variables/variables.json
+                echo "Adding variable $key in category $category "
+                upload_variable_result=$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@./variables/variables.json" "${TF_HOSTNAME}/vars")
+                done < ./variables/variables_file.csv
+                done 
+
+                echo "Creating configuration version."
+                configuration_version_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @configversion.json "https://${address}/api/v2/workspaces/${workspace_id}/configuration-versions")
+
+                config_version_id=$(echo $configuration_version_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
+                upload_url=$(echo $configuration_version_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['upload-url'])")
+                
+                echo "Config Version ID: " $config_version_id
+                echo "Upload URL: " $upload_url
+
+                echo "Uploading configuration version using ${config_dir}.tar.gz"
+                curl -s --header "Content-Type: application/octet-stream" --request PUT --data-binary @${config_dir}.tar.gz "$upload_url"
+                '''
             }
         
         }
@@ -38,6 +174,14 @@ pipeline {
                 sh 'echo "Hello"'
             }
 
+        }
+
+        stage('Approval') {
+            steps {
+                script {
+                    def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
+                }
+            }
         }
         
         stage('Launching Terraform Apply') {
