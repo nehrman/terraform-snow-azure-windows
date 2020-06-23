@@ -12,7 +12,7 @@ pipeline {
         TFE_ORG = "Hashicorp-neh-Demo"
         TFE_URL = "https://app.terraform.io/api/v2"
         TFE_WORKSPACE = "neh-test-jenkins"
-        
+        TFE_WORKSPACE_ID = ''
         TF_VERSION = "0.12.26"
     } 
     
