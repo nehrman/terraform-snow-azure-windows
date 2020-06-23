@@ -22,7 +22,7 @@ pipeline {
                 sh '''
                 set +e
                 apt update 
-                apt install -y git curl
+                apt install -y git curl jq
                 echo "git clone ${GIT_URL}"
                 '''                
             }
@@ -46,6 +46,7 @@ pipeline {
                     }
                 }
                 EOF
+                
 
                 tee ./templates/variable_tmpl.json <<EOF
                 {
@@ -138,7 +139,7 @@ pipeline {
 
                 if [ -z "$TF_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
-                    sed "s/placeholder/${WORKSPACE}/" < ./templates/workspace.template.json > ./workspace.json
+                    sed "s/placeholder/${WORKSPACE}/" < ./templates/workspace.tmpl.json > ./workspace.json
                     TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@./workspace.json" "${TF_HOSTNAME}/organizations/${TF_ORGANIZATION}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
