@@ -107,10 +107,10 @@ EOF
                   set +e
                   mkdir $WORKSPACE/variables
                   tee $WORKSPACE/variables/variables_file.csv << EOF
-                    ARM_CLIENT_ID,$ARM_CLIENT_ID,env,false,false
-                    ARM_CLIENT_SECRET,$ARM_CLIENT_SECRET,env,false,true
-                    ARM_SUBSCRIPTION_ID,$ARM_SUBSCRIPTION_ID,env,false,false
-                    ARM_TENANT_ID,$ARM_TENANT_ID,env,false,false
+                    ARM_CLIENT_ID,toto,env,false,false
+                    ARM_CLIENT_SECRET,toto,env,false,true
+                    ARM_SUBSCRIPTION_ID,toto,env,false,false
+                    ARM_TENANT_ID,toto,env,false,false
                     env,dev,terraform,false,false
 EOF
                 '''
