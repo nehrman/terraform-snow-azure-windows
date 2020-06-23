@@ -105,6 +105,7 @@ pipeline {
                 EOF
                 '''
                 sh'''
+                set +e
                 mkdir $WORKSPACE/variables
 
                 tee $WORKSPACE/variables/variables_file.csv <<EOF
