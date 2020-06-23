@@ -133,14 +133,14 @@ pipeline {
                 sh '''
                 set +e
                 echo "Checking if Workspace already exists"
-                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" "${TF_HOSTNAME}/organizations/${TF_ORGANIZATION}/workspaces/${WORKSPACE}")"
+                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" "${TF_URL}/organizations/${TF_ORG}/workspaces/${WORKSPACE}")"
                 TF_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | jq -r '.data.id')"
                 
 
                 if [ -z "$TF_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
                     sed "s/placeholder/${WORKSPACE}/" < ./templates/workspace.tmpl.json > ./workspace.json
-                    TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@./workspace.json" "${TF_HOSTNAME}/organizations/${TF_ORGANIZATION}/workspaces" | jq -r '.data.id')"
+                    TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@./workspace.json" "${TF_URL}/organizations/${TF_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
                 fi
@@ -156,7 +156,7 @@ pipeline {
                 done 
 
                 echo "Creating configuration version."
-                configuration_version_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @configversion.json "https://${address}/api/v2/workspaces/${workspace_id}/configuration-versions")
+                configuration_version_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @configversion.json "${TF_URL}/workspaces/${TF_WORKSPACE_ID}/configuration-versions")
 
                 config_version_id=$(echo $configuration_version_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
                 upload_url=$(echo $configuration_version_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['upload-url'])")
