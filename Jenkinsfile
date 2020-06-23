@@ -8,11 +8,11 @@ pipeline {
     }
 
     environment {
-        TFE_TOKEN = ""
-        TFE_ORG = ""
-        TF_URL = "https://app.terraform.io/v2/"
+        TFE_TOKEN = "RN8ji0WbgyGJwA.atlasv1.LCdlAB2lRjYjCh9IMwIaqHkyy4Kwz3veuzbENTHU78NcfQmgfmYnNJn6MWV4dTMzFpU"
+        TFE_ORG = "Hashicorp-neh-Demo"
+        TF_URL = "https://app.terraform.io/api/v2/"
         WORKSPACE = "neh-test-jenkins"
-        GIT_URL = ""
+        GIT_URL = "https://github.com/nehrman/terraform-snow-azure-windows"
     } 
     
     stages {
@@ -20,8 +20,8 @@ pipeline {
 
             steps {
                 sh '''
-                apt-get update && apt-get -y upgrade
-                apt-get install -y git curl gunzip
+                sudo apt-get update && apt-get -y upgrade
+                sudo apt-get install -y git curl gunzip
                 git clone ${GIT_URL}
                 '''                
             }
