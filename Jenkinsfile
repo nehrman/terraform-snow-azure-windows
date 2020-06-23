@@ -22,7 +22,7 @@ pipeline {
                 sh '''
                 apt update 
                 apt install -y git curl
-                git clone ${GIT_URL}
+                echo "git clone ${GIT_URL}"
                 '''                
             }
 
