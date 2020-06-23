@@ -3,7 +3,7 @@ pipeline {
     agent {
         docker {
             image 'debian:jessie'
-            args '-u root:sudo -v /home/tf:/home/tf'
+            args '-u root:sudo -v'
         }
     }
 
@@ -34,8 +34,8 @@ pipeline {
             steps {
                 sh '''
                 set +e
-                mkdir templates
-                tee ./templates/workspace_tmpl.json <<EOF
+                mkdir /home/jenkins/templates
+                tee /home/jenkins/templates/workspace_tmpl.json <<EOF
                 {
                     "data": {
                         "attributes": {
@@ -48,7 +48,7 @@ pipeline {
                 EOF
                 
 
-                tee ./templates/variable_tmpl.json <<EOF
+                tee /home/jenkins/templates/variable_tmpl.json <<EOF
                 {
                     "data": {
                         "type":"vars",
@@ -71,7 +71,7 @@ pipeline {
                 }
                 EOF
 
-                tee ./templates/run_tmpl.json <<EOF
+                tee /home/jenkins/templates/run_tmpl.json <<EOF
                 {
                     "data": {
                         "attributes": {
@@ -90,7 +90,7 @@ pipeline {
                 }
                 EOF
 
-                tee ./templates/workspace_tmpl.json <<EOF
+                tee /home/jenkins/templates/workspace_tmpl.json <<EOF
                 {
                     "data": {
                         "attributes": {
@@ -102,9 +102,9 @@ pipeline {
                 }
                 EOF
 
-                mkdir variables
+                mkdir /home/jenkins/variables
 
-                tee ./variables/variables_file.csv <<EOF
+                tee /home/jenkins/variables/variables_file.csv <<EOF
                 ARM_CLIENT_ID,$ARM_CLIENT_ID,env,false,false
                 ARM_CLIENT_SECRET,$ARM_CLIENT_SECRET,env,false,true
                 ARM_SUBSCRIPTION_ID,$ARM_SUBSCRIPTION_ID,env,false,false
@@ -112,7 +112,7 @@ pipeline {
                 env,dev,terraform,false,false
                 EOF
 
-                tee ./configversion.json <<EOF
+                tee /home/jenkins/configversion.json <<EOF
                 {
                     "data": {
                         "type": "configuration-versions",
@@ -139,8 +139,8 @@ pipeline {
 
                 if [ -z "$TF_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
-                    sed "s/placeholder/${WORKSPACE}/" < ./templates/workspace.tmpl.json > ./workspace.json
-                    TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@./workspace.json" "${TF_URL}/organizations/${TF_ORG}/workspaces" | jq -r '.data.id')"
+                    sed "s/placeholder/${WORKSPACE}/" < /home/jenkins/templates/workspace.tmpl.json > /home/jenkins/workspace.json
+                    TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@/home/jenkins/workspace.json" "${TF_URL}/organizations/${TF_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
                 fi
@@ -151,8 +151,8 @@ pipeline {
                 sed -e "s/my_workspace/${TF_WORKSPACE_ID}/" -e "s/my_key/$key/" -e "s/my_value/$value/" -e "s/my_category/$category/" -e "s/my_hcl/$hcl/" -e "s/my_sensitive/$sensitive/" < ./templates/variables_tmpl.json  > ./variables/variables.json
                 cat ./variables/variables.json
                 echo "Adding variable $key in category $category "
-                upload_variable_result=$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@./variables/variables.json" "${TF_HOSTNAME}/vars")
-                done < ./variables/variables_file.csv
+                upload_variable_result=$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@/home/jenkins/variables/variables.json" "${TF_HOSTNAME}/vars")
+                done < /home/jenkins/variables/variables_file.csv
                 done 
 
                 echo "Creating configuration version."
