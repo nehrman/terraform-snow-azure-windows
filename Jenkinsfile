@@ -196,14 +196,13 @@ EOF
                 echo "Run can be applied: " $is_confirmable
 
                 if [[ "$run_status" == "planned" ]] && [[ "$is_confirmable" == "True" ]]; then
-                continue=0
-                echo "There are " $sentinel_policy_count "policies, but none of them are applicable to this workspace."
-                echo "Check the run in Terraform Enterprise UI and apply there if desired."
+                  continue=0
+                  echo "There are " $sentinel_policy_count "policies, but none of them are applicable to this workspace."
+                  echo "Check the run in Terraform Enterprise UI and apply there if desired."
                 
                 elif [[ "$run_status" == "errored" ]]; then
-                continue=0
-                echo "There are error on yout configuration."
-                echo "Check the run in Terraform Enterprise UI and change your code."
+                  echo "Plan errored or hard-mandatory policy failed"
+                  continue=0
 
                 else 
                 echo "We will sleep and try again soon."
