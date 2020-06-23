@@ -153,7 +153,7 @@ EOF
                 sed -e "s/my-id/${TFE_WORKSPACE_ID}/" -e "s/my-key/$key/" -e "s/my-value/$value/" -e "s/my-category/$category/" -e "s/my-hcl/$hcl/" -e "s/my-sensitive/$sensitive/" <$WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
                 cat $WORKSPACE/variables/variables.json
                 echo "Adding variable $key in category $category "
-                upload_variable_result=$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TF_HOSTNAME}/vars")
+                upload_variable_result=$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TFE_URL}/vars")
                 done < $WORKSPACE/variables/variables_file.csv
 
                 echo "Creating configuration version."
