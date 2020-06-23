@@ -178,6 +178,24 @@ EOF
                 TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces/${TFE_WORKSPACE}" | jq -r '.data.id')"
                 sed "s/workspace_id/${TFE_WORKSPACE_ID}/" < $WORKSPACE/templates/run_tmpl.json  > $WORKSPACE/run.json
                 run_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/run.json $TFE_URL/runs)
+
+                TFE_RUN_ID=$(echo $run_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
+                echo "Run ID: " $TFE_RUN_ID
+
+                continue=1
+                while [ $continue -ne 0 ]; do
+  
+                sleep $sleep_duration
+                echo "Checking run status"
+
+                check_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" $TFE_URL/runs/${TFE_RUN_ID})
+
+                run_status=$(echo $check_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['status'])")
+                echo "Run Status: " $run_status
+                is_confirmable=$(echo $check_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['actions']['is-confirmable'])")
+                echo "Run can be applied: " $is_confirmable
+
+                done
                 '''
             }
 
