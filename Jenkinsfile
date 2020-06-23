@@ -20,6 +20,7 @@ pipeline {
 
             steps {
                 sh '''
+                set +e
                 apt update 
                 apt install -y git curl
                 echo "git clone ${GIT_URL}"
@@ -32,6 +33,7 @@ pipeline {
 
             steps {
                 sh '''
+                set +e
                 mkdir templates
                 tee ./templates/workspace_tmpl.json <<EOF
                 {
@@ -128,6 +130,7 @@ pipeline {
                 
             steps {
                 sh '''
+                set +e
                 echo "Checking if Workspace already exists"
                 CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" "${TF_HOSTNAME}/organizations/${TF_ORGANIZATION}/workspaces/${WORKSPACE}")"
                 TF_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | jq -r '.data.id')"
