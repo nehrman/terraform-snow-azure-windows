@@ -60,7 +60,7 @@ pipeline {
 EOF
                 '''
                 sh '''
-                  tee $WORKSPACE/templates/variable_tmpl.json << EOF
+                  tee $WORKSPACE/templates/variables_tmpl.json << EOF
                     {
                       "data": {
                           "type":"vars",
