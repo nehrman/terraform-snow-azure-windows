@@ -134,7 +134,7 @@ pipeline {
                 set +e
                 echo "Checking if Workspace already exists"
                 CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" "${TF_URL}/organizations/${TF_ORG}/workspaces/${WORKSPACE}")"
-                TF_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | jq -r '.data.id')"
+                TF_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
                 
 
                 if [ -z "$TF_WORKSPACE_ID"]; then
