@@ -185,7 +185,7 @@ EOF
                 continue=1
                 while [ $continue -ne 0 ]; do
   
-                sleep $sleep_duration
+                sleep 5
                 echo "Checking run status"
 
                 check_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" $TFE_URL/runs/${TFE_RUN_ID})
