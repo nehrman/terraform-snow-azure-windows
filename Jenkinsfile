@@ -10,7 +10,7 @@ pipeline {
     environment {
         TFE_TOKEN = "RN8ji0WbgyGJwA.atlasv1.LCdlAB2lRjYjCh9IMwIaqHkyy4Kwz3veuzbENTHU78NcfQmgfmYnNJn6MWV4dTMzFpU"
         TFE_ORG = "Hashicorp-neh-Demo"
-        TF_URL = "https://app.terraform.io/api/v2/"
+        TF_URL = "https://app.terraform.io/api/v2"
         WORKSPACE = "neh-test-jenkins"
         GIT_URL = "https://github.com/nehrman/terraform-snow-azure-windows"
     } 
@@ -129,7 +129,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Checking if Workspace already exists"
-                CHECK_WORKSPACE_RESULT='(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" "${TF_HOSTNAME}/organizations/${TF_ORGANIZATION}/workspaces/${WORKSPACE}"       ) 
+                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" "${TF_HOSTNAME}/organizations/${TF_ORGANIZATION}/workspaces/${WORKSPACE}")"
                 TF_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | jq -r '.data.id')"
                 
 
