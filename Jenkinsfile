@@ -144,8 +144,8 @@ EOF
 
                 if [ -z "$TF_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
-                    sed "s/placeholder/${TF_WORKSPACE}/" < $WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
-                    TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@/home/jenkins/workspace.json" "${TF_URL}/organizations/${TF_ORG}/workspaces" | jq -r '.data.id')"
+                    sed "s/placeholder/$TF_WORKSPACE/" < $WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
+                    TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${TF_URL}/organizations/${TF_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
                 fi
