@@ -51,7 +51,7 @@ pipeline {
                     {
                        "data": {
                            "attributes": {
-                               "name": "placeholder",
+                               "name": "to_change",
                                "terraform_version": "$TF_VERSION"
                            },
                            "type": "workspaces"
@@ -156,7 +156,7 @@ EOF
 
                 if [ -z "$TF_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
-                    sed "s/placeholder/${TF_WORKSPACE}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
+                    sed "s/to_change/${TF_WORKSPACE}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
                     TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${TF_URL}/organizations/${TF_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
@@ -170,7 +170,6 @@ EOF
                 echo "Adding variable $key in category $category "
                 upload_variable_result=$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TF_HOSTNAME}/vars")
                 done < $WORKSPACE/variables/variables_file.csv
-                done 
 
                 echo "Creating configuration version."
                 configuration_version_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/configversion.json "${TF_URL}/workspaces/${TF_WORKSPACE_ID}/configuration-versions")
