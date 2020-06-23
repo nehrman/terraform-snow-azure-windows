@@ -51,7 +51,7 @@ pipeline {
                     {
                        "data": {
                            "attributes": {
-                               "name": "to_change",
+                               "name": "placeholder",
                                "terraform_version": "$TF_VERSION"
                            },
                            "type": "workspaces"
@@ -104,19 +104,6 @@ EOF
 EOF
                 '''
                 sh'''
-                  tee $WORKSPACE/templates/workspace_tmpl.json << EOF
-                    {
-                      "data": {
-                          "attributes": {
-                              "name": "$TF_PREFIX$env",
-                              "terraform_version": "$TF_VERSION"
-                          },
-                          "type": "workspaces"
-                       }
-                    }
-EOF
-                '''
-                sh'''
                   set +e
                   mkdir $WORKSPACE/variables
                   tee $WORKSPACE/variables/variables_file.csv << EOF
@@ -156,7 +143,7 @@ EOF
 
                 if [ -z "$TF_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
-                    sed "s/to_change/${TF_WORKSPACE}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
+                    sed "s/placeholder/${TF_WORKSPACE}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
                     TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${TF_URL}/organizations/${TF_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
