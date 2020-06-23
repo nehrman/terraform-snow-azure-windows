@@ -136,14 +136,14 @@ EOF
                 sh '''
                 set +e
                 echo "Checking if Workspace already exists"
-                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces/${TFE_WORKSPACE}")"
+                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${TFE_TOKEN}" -H "Content-Type: application/vnd.api+json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces/${TFE_WORKSPACE}")"
                 TFE_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")"
                 
 
                 if [ -z "$TFE_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
                     sed "s/placeholder/${TFE_WORKSPACE}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
-                    TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces" | jq -r '.data.id')"
+                    TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${TFE_TOKEN}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
                 fi
@@ -154,7 +154,7 @@ EOF
                 sed -e "s/my_workspace/${TFE_WORKSPACE_ID}/" -e "s/my_key/$key/" -e "s/my_value/$value/" -e "s/my_category/$category/" -e "s/my_hcl/$hcl/" -e "s/my_sensitive/$sensitive/" < $WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
                 cat ./variables/variables.json
                 echo "Adding variable $key in category $category "
-                upload_variable_result=$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TF_HOSTNAME}/vars")
+                upload_variable_result=$(curl -v -H "Authorization: Bearer ${TFE_TOKEN}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TF_HOSTNAME}/vars")
                 done < $WORKSPACE/variables/variables_file.csv
 
                 echo "Creating configuration version."
