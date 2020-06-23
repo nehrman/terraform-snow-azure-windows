@@ -34,8 +34,8 @@ pipeline {
             steps {
                 sh '''
                 set +e
-                mkdir /home/jenkins/templates
-                tee /home/jenkins/templates/workspace_tmpl.json <<EOF
+                mkdir $WORKSPACE/templates
+                tee $WORKSPACE/templates/workspace_tmpl.json <<EOF
                 {
                     "data": {
                         "attributes": {
@@ -48,7 +48,7 @@ pipeline {
                 EOF
                 
 
-                tee /home/jenkins/templates/variable_tmpl.json <<EOF
+                tee $WORKSPACE/templates/variable_tmpl.json <<EOF
                 {
                     "data": {
                         "type":"vars",
@@ -71,7 +71,7 @@ pipeline {
                 }
                 EOF
 
-                tee /home/jenkins/templates/run_tmpl.json <<EOF
+                tee $WORKSPACE/templates/run_tmpl.json <<EOF
                 {
                     "data": {
                         "attributes": {
@@ -90,7 +90,7 @@ pipeline {
                 }
                 EOF
 
-                tee /home/jenkins/templates/workspace_tmpl.json <<EOF
+                tee $WORKSPACE/templates/workspace_tmpl.json <<EOF
                 {
                     "data": {
                         "attributes": {
@@ -102,9 +102,9 @@ pipeline {
                 }
                 EOF
 
-                mkdir /home/jenkins/variables
+                mkdir $WORKSPACE/variables
 
-                tee /home/jenkins/variables/variables_file.csv <<EOF
+                tee $WORKSPACE/variables/variables_file.csv <<EOF
                 ARM_CLIENT_ID,$ARM_CLIENT_ID,env,false,false
                 ARM_CLIENT_SECRET,$ARM_CLIENT_SECRET,env,false,true
                 ARM_SUBSCRIPTION_ID,$ARM_SUBSCRIPTION_ID,env,false,false
@@ -112,7 +112,7 @@ pipeline {
                 env,dev,terraform,false,false
                 EOF
 
-                tee /home/jenkins/configversion.json <<EOF
+                tee $WORKSPACE/configversion.json <<EOF
                 {
                     "data": {
                         "type": "configuration-versions",
@@ -139,7 +139,7 @@ pipeline {
 
                 if [ -z "$TF_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
-                    sed "s/placeholder/${WORKSPACE}/" < /home/jenkins/templates/workspace.tmpl.json > /home/jenkins/workspace.json
+                    sed "s/placeholder/${WORKSPACE}/" < $WORKSPACE/templates/workspace.tmpl.json > $WORKSPACE/workspace.json
                     TF_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@/home/jenkins/workspace.json" "${TF_URL}/organizations/${TF_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
