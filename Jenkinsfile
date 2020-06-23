@@ -21,7 +21,7 @@ pipeline {
             steps {
                 sh '''
                 apt update 
-                apt install -y git curl gunzip
+                apt install -y git curl
                 git clone ${GIT_URL}
                 '''                
             }
