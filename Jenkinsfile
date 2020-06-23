@@ -12,7 +12,7 @@ pipeline {
         TFE_ORG = "Hashicorp-neh-Demo"
         TF_URL = "https://app.terraform.io/api/v2"
         TF_WORKSPACE = "neh-test-jenkins"
-        GIT_URL = "https://github.com/nehrman/terraform-snow-azure-windows"
+        
         TF_VERSION = "0.12.26"
     } 
     
@@ -28,6 +28,17 @@ pipeline {
                 '''                
             }
 
+        }
+
+        stage('Preparing Terraform Configuration') {
+
+            steps {
+                sh '''
+                  set +e
+                  CONFIG_DIR = $(echo $GIT_URL | cut -d "/" -f 5 | cut -d "." -f 1)
+                  tar -czf $CONFIG_DIR.tar.gz --exclude='.git' --exclude='.gitignore' --exclude='Jenkinsfile' .
+                '''                
+            }
         }
 
         stage('Preparing Files Templates for Terraform Enterprise') {
@@ -153,15 +164,15 @@ EOF
                 echo "Configuring Variables at Workspace Level"
                 while IFS=',' read -r key value category hcl sensitive
                 do
-                sed -e "s/my_workspace/${TF_WORKSPACE_ID}/" -e "s/my_key/$key/" -e "s/my_value/$value/" -e "s/my_category/$category/" -e "s/my_hcl/$hcl/" -e "s/my_sensitive/$sensitive/" < ./templates/variables_tmpl.json  > ./variables/variables.json
+                sed -e "s/my_workspace/${TF_WORKSPACE_ID}/" -e "s/my_key/$key/" -e "s/my_value/$value/" -e "s/my_category/$category/" -e "s/my_hcl/$hcl/" -e "s/my_sensitive/$sensitive/" < $WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
                 cat ./variables/variables.json
                 echo "Adding variable $key in category $category "
-                upload_variable_result=$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@/home/jenkins/variables/variables.json" "${TF_HOSTNAME}/vars")
+                upload_variable_result=$(curl -v -H "Authorization: Bearer ${tfe_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TF_HOSTNAME}/vars")
                 done < /home/jenkins/variables/variables_file.csv
                 done 
 
                 echo "Creating configuration version."
-                configuration_version_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @configversion.json "${TF_URL}/workspaces/${TF_WORKSPACE_ID}/configuration-versions")
+                configuration_version_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/configversion.json "${TF_URL}/workspaces/${TF_WORKSPACE_ID}/configuration-versions")
 
                 config_version_id=$(echo $configuration_version_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
                 upload_url=$(echo $configuration_version_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['upload-url'])")
@@ -170,7 +181,7 @@ EOF
                 echo "Upload URL: " $upload_url
 
                 echo "Uploading configuration version using ${config_dir}.tar.gz"
-                curl -s --header "Content-Type: application/octet-stream" --request PUT --data-binary @${config_dir}.tar.gz "$upload_url"
+                curl -s --header "Content-Type: application/octet-stream" --request PUT --data-binary @$CONFIG_DIR.tar.gz "$upload_url"
                 '''
             }
         
