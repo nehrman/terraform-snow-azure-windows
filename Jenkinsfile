@@ -35,7 +35,7 @@ pipeline {
                 sh '''
                 set +e
                 mkdir $WORKSPACE/templates
-                tee $WORKSPACE/templates/workspace_tmpl.json <<EOF
+                tee $WORKSPACE/templates/workspace_tmpl.json << EOF
                     {
                         "data": {
                             "attributes": {
@@ -48,7 +48,7 @@ pipeline {
                 EOF
                 '''
                 sh '''
-                tee $WORKSPACE/templates/variable_tmpl.json <<EOF
+                tee $WORKSPACE/templates/variable_tmpl.json << EOF
                 {
                     "data": {
                         "type":"vars",
@@ -72,7 +72,7 @@ pipeline {
                 EOF
                 '''
                 sh'''
-                tee $WORKSPACE/templates/run_tmpl.json <<EOF
+                tee $WORKSPACE/templates/run_tmpl.json << EOF
                 {
                     "data": {
                         "attributes": {
@@ -92,7 +92,7 @@ pipeline {
                 EOF
                 '''
                 sh'''
-                tee $WORKSPACE/templates/workspace_tmpl.json <<EOF
+                tee $WORKSPACE/templates/workspace_tmpl.json << EOF
                 {
                     "data": {
                         "attributes": {
@@ -108,7 +108,7 @@ pipeline {
                 set +e
                 mkdir $WORKSPACE/variables
 
-                tee $WORKSPACE/variables/variables_file.csv <<EOF
+                tee $WORKSPACE/variables/variables_file.csv << EOF
                 ARM_CLIENT_ID,$ARM_CLIENT_ID,env,false,false
                 ARM_CLIENT_SECRET,$ARM_CLIENT_SECRET,env,false,true
                 ARM_SUBSCRIPTION_ID,$ARM_SUBSCRIPTION_ID,env,false,false
@@ -117,7 +117,7 @@ pipeline {
                 EOF
                 '''
                 sh'''
-                tee $WORKSPACE/configversion.json <<EOF
+                tee $WORKSPACE/configversion.json << EOF
                 {
                     "data": {
                         "type": "configuration-versions",
