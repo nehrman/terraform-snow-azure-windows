@@ -35,7 +35,7 @@ pipeline {
             steps {
                 sh '''
                   set +e
-                  CONFIG_DIR = $(echo $GIT_URL | cut -d "/" -f 5 | cut -d "." -f 1)
+                  CONFIG_DIR="$(echo $GIT_URL | cut -d "/" -f 5 | cut -d "." -f 1)"
                   tar -czf $CONFIG_DIR.tar.gz --exclude='.git' --exclude='.gitignore' --exclude='Jenkinsfile' .
                 '''                
             }
