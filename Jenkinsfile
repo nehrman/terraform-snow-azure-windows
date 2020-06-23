@@ -20,8 +20,8 @@ pipeline {
 
             steps {
                 sh '''
-                sudo apt-get update && apt-get -y upgrade
-                sudo apt-get install -y git curl gunzip
+                apt update 
+                apt install -y git curl gunzip
                 git clone ${GIT_URL}
                 '''                
             }
