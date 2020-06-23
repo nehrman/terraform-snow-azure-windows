@@ -138,12 +138,13 @@ EOF
                 echo "Checking if Workspace already exists"
                 CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces/${TFE_WORKSPACE}")"
                 TFE_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")"
-                
+                env.TFE_WORKSPACE_ID=$TFE_WORKSPACE_ID
 
                 if [ -z "$TFE_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
                     sed "s/placeholder/${TFE_WORKSPACE}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
                     TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces" | jq -r '.data.id')"
+                    env.TFE_WORKSPACE_ID=$TFE_WORKSPACE_ID
                 else
                     echo "Workspace Already Exist"
                 fi
@@ -151,7 +152,7 @@ EOF
                 echo "Configuring Variables at Workspace Level"
                 while IFS=',' read -r key value category hcl sensitive
                 do
-                sed -e "s/my-id/${TFE_WORKSPACE_ID}/" -e "s/my-key/$key/" -e "s/my-value/$value/" -e "s/my-category/$category/" -e "s/my-hcl/$hcl/" -e "s/my-sensitive/$sensitive/" <$WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
+                sed -e "s/my-id/${env.TFE_WORKSPACE_ID}/" -e "s/my-key/$key/" -e "s/my-value/$value/" -e "s/my-category/$category/" -e "s/my-hcl/$hcl/" -e "s/my-sensitive/$sensitive/" <$WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
                 cat $WORKSPACE/variables/variables.json
                 echo "Adding variable $key in category $category "
                 upload_variable_result=$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TFE_URL}/vars")
