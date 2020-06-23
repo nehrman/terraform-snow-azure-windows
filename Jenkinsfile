@@ -36,18 +36,18 @@ pipeline {
                 set +e
                 mkdir $WORKSPACE/templates
                 tee $WORKSPACE/templates/workspace_tmpl.json <<EOF
-                {
-                    "data": {
-                        "attributes": {
-                            "name": "placeholder",
-                            "terraform_version": "$TF_VERSION"
-                        },
-                        "type": "workspaces"
+                    {
+                        "data": {
+                            "attributes": {
+                                "name": "placeholder",
+                                "terraform_version": "$TF_VERSION"
+                            },
+                            "type": "workspaces"
+                        }
                     }
-                }
                 EOF
-                
-
+                '''
+                sh '''
                 tee $WORKSPACE/templates/variable_tmpl.json <<EOF
                 {
                     "data": {
@@ -70,7 +70,8 @@ pipeline {
                     }
                 }
                 EOF
-
+                '''
+                sh'''
                 tee $WORKSPACE/templates/run_tmpl.json <<EOF
                 {
                     "data": {
@@ -89,7 +90,8 @@ pipeline {
                     }   
                 }
                 EOF
-
+                '''
+                sh'''
                 tee $WORKSPACE/templates/workspace_tmpl.json <<EOF
                 {
                     "data": {
@@ -101,7 +103,8 @@ pipeline {
                     }
                 }
                 EOF
-
+                '''
+                sh'''
                 mkdir $WORKSPACE/variables
 
                 tee $WORKSPACE/variables/variables_file.csv <<EOF
@@ -111,7 +114,8 @@ pipeline {
                 ARM_TENANT_ID,$ARM_TENANT_ID,env,false,false
                 env,dev,terraform,false,false
                 EOF
-
+                '''
+                sh'''
                 tee $WORKSPACE/configversion.json <<EOF
                 {
                     "data": {
