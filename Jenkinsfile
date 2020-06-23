@@ -28,7 +28,6 @@ pipeline {
 
         }
 
-        stages {
         stage('Preparing Files Templates for Terraform Enterprise') {
 
             steps {
@@ -121,8 +120,8 @@ pipeline {
                 }
                 EOF 
                 '''           
+                
             }
-
         }
 
         stage('Preparing Terraform Enterprise Workspace') {
