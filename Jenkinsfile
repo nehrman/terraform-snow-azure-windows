@@ -3,7 +3,7 @@ pipeline {
     agent {
         docker {
             image 'debian:jessie'
-            args '-u root:sudo -v'
+            args '-u root:sudo '
         }
     }
 
