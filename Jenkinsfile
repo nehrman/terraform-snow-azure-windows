@@ -177,7 +177,7 @@ EOF
 
             steps {
                 sh '''
-                sed "s/workspace_id/$TFE_WORKSPACE_ID/" < $WORKSPACE/templates/run.tmpl.json  > $WORKSPACE/run.json
+                sed "s/workspace_id/$TFE_WORKSPACE_ID/" < $WORKSPACE/templates/run_tmpl.json  > $WORKSPACE/run.json
                 run_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/run.json $TFE_URL/runs)
                 '''
             }
