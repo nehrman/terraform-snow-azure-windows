@@ -176,7 +176,10 @@ EOF
         stage('Launching Terraform Plan') {
 
             steps {
-                sh 'echo "Hello"'
+                sh '''
+                sed "s/workspace_id/$TFE_WORKSPACE_ID/" < run.template.json  > run.json
+                run_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/run.json $TFE_URL/runs)
+                '''
             }
 
         }
