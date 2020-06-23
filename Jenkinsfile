@@ -3,7 +3,7 @@ pipeline {
     agent {
         docker {
             image 'debian:jessie'
-            args '-v /home/tf:/home/tf'
+            args '-u root:sudo -v /home/tf:/home/tf'
         }
     }
 
