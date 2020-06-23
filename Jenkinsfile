@@ -70,16 +70,15 @@ EOF
                               "category":"my-category",
                               "hcl":my-hcl,
                               "sensitive":my-sensitive
-                          }
-                      },
-                      "filter": {
-                          "organization": {
-                              "username":"my-organization"
                           },
+                          "relationships": {
                           "workspace": {
-                              "name":"my-workspace"
+                             "data": {
+                                "id":"my-id",
+                                "type":"workspaces"
+                             }
                           }
-                      }
+                        }
                     }
 EOF
                 '''
@@ -151,8 +150,8 @@ EOF
                 echo "Configuring Variables at Workspace Level"
                 while IFS=',' read -r key value category hcl sensitive
                 do
-                sed -e "s/my_workspace/${TFE_WORKSPACE_ID}/" -e "s/my_key/$key/" -e "s/my_value/$value/" -e "s/my_category/$category/" -e "s/my_hcl/$hcl/" -e "s/my_sensitive/$sensitive/" < $WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
-                cat ./variables/variables.json
+                sed -e "s/my-id/${TFE_WORKSPACE_ID}/" -e "s/my-key/$key/" -e "s/my-value/$value/" -e "s/my-category/$category/" -e "s/my-hcl/$hcl/" -e "s/my-sensitive/$sensitive/" <$WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
+                cat $WORKSPACE/variables/variables.json
                 echo "Adding variable $key in category $category "
                 upload_variable_result=$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TF_HOSTNAME}/vars")
                 done < $WORKSPACE/variables/variables_file.csv
