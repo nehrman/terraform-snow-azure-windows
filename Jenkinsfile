@@ -36,20 +36,20 @@ pipeline {
                 set +e
                 mkdir $WORKSPACE/templates
                 tee $WORKSPACE/templates/workspace_tmpl.json << EOF
-                    {
-                        "data": {
-                            "attributes": {
-                                "name": "placeholder",
-                                "terraform_version": "$TF_VERSION"
-                            },
-                            "type": "workspaces"
-                        }
-                    }
-EOF
+                  {
+                     "data": {
+                         "attributes": {
+                             "name": "placeholder",
+                             "terraform_version": "$TF_VERSION"
+                         },
+                         "type": "workspaces"
+                     }
+                  }
+                EOF
                 '''
                 sh '''
                 tee $WORKSPACE/templates/variable_tmpl.json << EOF
-                {
+                  {
                     "data": {
                         "type":"vars",
                         "attributes": {
@@ -68,12 +68,12 @@ EOF
                             "name":"my-workspace"
                         }
                     }
-                }
-EOF
+                  }
+                EOF
                 '''
                 sh'''
                 tee $WORKSPACE/templates/run_tmpl.json << EOF
-                {
+                  {
                     "data": {
                         "attributes": {
                             "is-destroy":false
@@ -88,12 +88,12 @@ EOF
                             }
                         }
                     }   
-                }
-EOF
+                  }
+                EOF
                 '''
                 sh'''
                 tee $WORKSPACE/templates/workspace_tmpl.json << EOF
-                {
+                  {
                     "data": {
                         "attributes": {
                             "name": "$TF_PREFIX$env",
@@ -101,32 +101,32 @@ EOF
                         },
                         "type": "workspaces"
                     }
-                }
-EOF
+                  }
+                EOF
                 '''
                 sh'''
                 set +e
                 mkdir $WORKSPACE/variables
 
                 tee $WORKSPACE/variables/variables_file.csv << EOF
-                ARM_CLIENT_ID,$ARM_CLIENT_ID,env,false,false
-                ARM_CLIENT_SECRET,$ARM_CLIENT_SECRET,env,false,true
-                ARM_SUBSCRIPTION_ID,$ARM_SUBSCRIPTION_ID,env,false,false
-                ARM_TENANT_ID,$ARM_TENANT_ID,env,false,false
-                env,dev,terraform,false,false
-EOF
+                  ARM_CLIENT_ID,$ARM_CLIENT_ID,env,false,false
+                  ARM_CLIENT_SECRET,$ARM_CLIENT_SECRET,env,false,true
+                  ARM_SUBSCRIPTION_ID,$ARM_SUBSCRIPTION_ID,env,false,false
+                  ARM_TENANT_ID,$ARM_TENANT_ID,env,false,false
+                  env,dev,terraform,false,false
+                EOF
                 '''
                 sh'''
                 tee $WORKSPACE/configversion.json << EOF
-                {
-                    "data": {
-                        "type": "configuration-versions",
-                        "attributes": {
-                            "auto-queue-runs": false
-                        }
+                  {
+                      "data": {
+                          "type": "configuration-versions",
+                          "attributes": {
+                              "auto-queue-runs": false
+                          }
                     }
-                }
-EOF 
+                  }
+                EOF
                 '''           
                 
             }
