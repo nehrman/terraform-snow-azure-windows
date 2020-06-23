@@ -3,7 +3,7 @@ pipeline {
     agent {
         docker {
             image 'debian:jessie'
-            args '-v $HOME/tf:root/tf'
+            args '-v /home/tf:/home/tf'
         }
     }
 
