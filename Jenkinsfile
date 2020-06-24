@@ -186,6 +186,7 @@ EOF
                 while [ $continue -ne 0 ]; do
   
                 sleep 5
+
                 echo "Checking run status"
 
                 check_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" $TFE_URL/runs/${TFE_RUN_ID})
@@ -195,7 +196,7 @@ EOF
                 is_confirmable=$(echo $check_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['actions']['is-confirmable'])")
                  echo "Run can be applied: " $is_confirmable
 
-                if [[ "$run_status" == "planned" ]] && [[ "$is_confirmable" == "True" ]]
+                if [ "$run_status" == "planned" ] && [ "$is_confirmable" == "True" ]
                   then
                   continue=0
                   echo "There are " $sentinel_policy_count "policies, but none of them are applicable to this workspace."
