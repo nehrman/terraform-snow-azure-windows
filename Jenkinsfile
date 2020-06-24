@@ -188,6 +188,8 @@ EOF
                 TFE_RUN_ID=$(echo $run_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
                 echo "Run ID: " $TFE_RUN_ID
 
+                save_plan="true"
+
                 continue=1
                 while [ $continue -ne 0 ]; do
   
@@ -219,6 +221,15 @@ EOF
                 fi
 
                 done
+
+                if [ "$save_plan" = "true" ]
+                then
+                echo "Getting the result of the Terraform Plan."
+                plan_result=$(curl -s --header "Authorization: Bearer ${user_token}" --header "Content-Type: application/vnd.api+json" ${url}/runs/${run_id}?include=plan)
+                plan_log_url=$(echo $plan_result | python -c "import sys, json; print(json.load(sys.stdin)['included'][0]['attributes']['log-read-url'])")
+                echo "Plan Log:"
+                curl -s $plan_log_url | tee ${run_id}.log
+                fi
                 '''
             }
 
