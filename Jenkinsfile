@@ -11,7 +11,7 @@ pipeline {
         string(name: 'org_token', defaultValue: 'default', description: 'Jenkins Terraform Enterprise Organization Token for Workspace Creation')
         string(name: 'user_token', defaultValue: 'default', description: 'User Terraform Enterprise Token for Runs')
         string(name: 'organization', defaultValue: 'default', description: 'Terraform Organization Name')
-        string(name: 'workspace', defaultValue: 'default', description: 'Terraform Workspace Name')
+        string(name: 'tf_workspace', defaultValue: 'default', description: 'Terraform Workspace Name')
         string(name: 'url', defaultValue: 'default', description: 'Url to connect to Terraform Enterprise - ex : https://app.terraform.io/api/v2')
         string(name: 'version', defaultValue: '', description: 'Terraform Binary Version')
         string(name: 'client_id', defaultValue: '', description: 'Azure Client ID')
@@ -141,12 +141,12 @@ EOF
                 sh '''
                 set +e
                 echo "Checking if Workspace already exists"
-                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" "${param.url}/organizations/${param.organization}/workspaces/${param.workspace}")"
+                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" "${param.url}/organizations/${param.organization}/workspaces/${param.tf_workspace}")"
                 TFE_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")"
 
                 if [ -z "$TFE_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
-                    sed "s/placeholder/${param.workspace}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
+                    sed "s/placeholder/${param.tf_workspace}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
                     TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${param.url}/organizations/${TFE_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
@@ -181,7 +181,7 @@ EOF
 
             steps {
                 sh '''
-                TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" "${param.url}/organizations/${TFE_ORG}/workspaces/${param.workspace}" | jq -r '.data.id')"
+                TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" "${param.url}/organizations/${TFE_ORG}/workspaces/${param.tf_workspace}" | jq -r '.data.id')"
                 sed "s/workspace_id/${TFE_WORKSPACE_ID}/" < $WORKSPACE/templates/run_tmpl.json  > $WORKSPACE/run.json
                 run_result=$(curl -s --header "Authorization: Bearer ${param.org_token}" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/run.json ${param.url}/runs)
 
