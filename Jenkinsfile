@@ -7,13 +7,19 @@ pipeline {
         }
     }
 
-    environment {
-        TFE_TOKEN = "3zy31sP1w8Kg6g.atlasv1.uZy2rh8axeUELdKAnqNCRxi6qQQeIcyOfSQiO3iC3A5L6oBVt74ryKazBdWqN1BVWEM"
-        TFE_ORG = "Hashicorp-neh-Demo"
-        TFE_URL = "https://app.terraform.io/api/v2"
-        TFE_WORKSPACE = "neh-test-jenkins"
-        TF_VERSION = "0.12.26"
-    } 
+    parameters {
+        string(name: 'org_token', defaultValue: 'default', description: 'Jenkins Terraform Enterprise Organization Token for Workspace Creation')
+        string(name: 'user_token', defaultValue: 'default', description: 'User Terraform Enterprise Token for Runs')
+        string(name: 'organization', defaultValue: 'default', description: 'Terraform Organization Name')
+        string(name: 'workspace', defaultValue: 'default', description: 'Terraform Workspace Name')
+        string(name: 'url', defaultValue: 'default', description: 'Url to connect to Terraform Enterprise - ex : https://app.terraform.io/api/v2')
+        string(name: 'version', defaultValue: '', description: 'Terraform Binary Version')
+        string(name: 'client_id', defaultValue: '', description: 'Azure Client ID')
+        string(name: 'client_secret', defaultValue: '', description: 'Azure Client Secret')
+        string(name: 'subscription_id', defaultValue: '', description: 'Azure Subscription ID')
+        string(name: 'tenant_id', defaultValue: '', description: 'Azure Tenant ID')
+        
+    }
     
     stages {
         stage('Preparing Environment') {
@@ -51,7 +57,7 @@ pipeline {
                        "data": {
                            "attributes": {
                                "name": "placeholder",
-                               "terraform_version": "$TF_VERSION"
+                               "terraform_version": "${param.version}"
                            },
                            "type": "workspaces"
                        }
@@ -106,10 +112,10 @@ EOF
                   set +e
                   mkdir $WORKSPACE/variables
                   tee $WORKSPACE/variables/variables_file.csv << EOF
-                    ARM_CLIENT_ID,toto,env,false,false
-                    ARM_CLIENT_SECRET,toto,env,false,true
-                    ARM_SUBSCRIPTION_ID,toto,env,false,false
-                    ARM_TENANT_ID,toto,env,false,false
+                    ARM_CLIENT_ID,${param.client_id},env,false,false
+                    ARM_CLIENT_SECRET,${param.client_secret},env,false,true
+                    ARM_SUBSCRIPTION_ID,${param.subscription_id},env,false,false
+                    ARM_TENANT_ID,${param.tenant_id},env,false,false
                     env,dev,terraform,false,false
 EOF
                 '''
@@ -135,13 +141,13 @@ EOF
                 sh '''
                 set +e
                 echo "Checking if Workspace already exists"
-                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces/${TFE_WORKSPACE}")"
+                CHECK_WORKSPACE_RESULT="$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" "${param.url}/organizations/${param.organization}/workspaces/${param.workspace}")"
                 TFE_WORKSPACE_ID="$(echo $CHECK_WORKSPACE_RESULT | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")"
 
                 if [ -z "$TFE_WORKSPACE_ID"]; then
                     echo "Workspace doesn't exist so it will be created"
-                    sed "s/placeholder/${TFE_WORKSPACE}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
-                    TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces" | jq -r '.data.id')"
+                    sed "s/placeholder/${param.workspace}/" <$WORKSPACE/templates/workspace_tmpl.json > $WORKSPACE/workspace.json
+                    TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/workspace.json" "${param.url}/organizations/${TFE_ORG}/workspaces" | jq -r '.data.id')"
                 else
                     echo "Workspace Already Exist"
                 fi
@@ -149,14 +155,14 @@ EOF
                 echo "Configuring Variables at Workspace Level"
                 while IFS=',' read -r key value category hcl sensitive
                 do
-                sed -e "s/my-id/${TFE_WORKSPACE_ID}/" -e "s/my-key/$key/" -e "s/my-value/$value/" -e "s/my-category/$category/" -e "s/my-hcl/$hcl/" -e "s/my-sensitive/$sensitive/" <$WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
+                sed -e "s/my-id/${TFE_WORKSAPACE_ID}/" -e "s/my-key/$key/" -e "s/my-value/$value/" -e "s/my-category/$category/" -e "s/my-hcl/$hcl/" -e "s/my-sensitive/$sensitive/" <$WORKSPACE/templates/variables_tmpl.json  > $WORKSPACE/variables/variables.json
                 cat $WORKSPACE/variables/variables.json
                 echo "Adding variable $key in category $category "
-                upload_variable_result=$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${TFE_URL}/vars")
+                upload_variable_result=$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" -d "@$WORKSPACE/variables/variables.json" "${param.url}/vars")
                 done < $WORKSPACE/variables/variables_file.csv
 
                 echo "Creating configuration version."
-                configuration_version_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/configversion.json "${TFE_URL}/workspaces/${TFE_WORKSPACE_ID}/configuration-versions")
+                configuration_version_result=$(curl -s --header "Authorization: Bearer ${param.org_token}" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/configversion.json "${param.url}/workspaces/${TFE_WORKSPACE_ID}/configuration-versions")
 
                 config_version_id=$(echo $configuration_version_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
                 upload_url=$(echo $configuration_version_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['upload-url'])")
@@ -175,9 +181,9 @@ EOF
 
             steps {
                 sh '''
-                TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer $TFE_TOKEN" -H "Content-Type: application/vnd.api+json" "${TFE_URL}/organizations/${TFE_ORG}/workspaces/${TFE_WORKSPACE}" | jq -r '.data.id')"
+                TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${param.org_token}" -H "Content-Type: application/vnd.api+json" "${param.url}/organizations/${TFE_ORG}/workspaces/${param.workspace}" | jq -r '.data.id')"
                 sed "s/workspace_id/${TFE_WORKSPACE_ID}/" < $WORKSPACE/templates/run_tmpl.json  > $WORKSPACE/run.json
-                run_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/run.json $TFE_URL/runs)
+                run_result=$(curl -s --header "Authorization: Bearer ${param.org_token}" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/run.json ${param.url}/runs)
 
                 TFE_RUN_ID=$(echo $run_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
                 echo "Run ID: " $TFE_RUN_ID
@@ -189,7 +195,7 @@ EOF
 
                 echo "Checking run status"
 
-                check_result=$(curl -s --header "Authorization: Bearer $TFE_TOKEN" --header "Content-Type: application/vnd.api+json" $TFE_URL/runs/${TFE_RUN_ID})
+                check_result=$(curl -s --header "Authorization: Bearer ${param.org_token}" --header "Content-Type: application/vnd.api+json" $param.url/runs/${TFE_RUN_ID})
 
                 run_status=$(echo $check_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['status'])")
                 echo "Run Status: " $run_status
