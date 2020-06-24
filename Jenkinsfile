@@ -57,7 +57,7 @@ pipeline {
                        "data": {
                            "attributes": {
                                "name": "placeholder",
-                               "terraform_version": "${param.version}"
+                               "terraform_version": "${version}"
                            },
                            "type": "workspaces"
                        }
