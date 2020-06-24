@@ -181,7 +181,7 @@ EOF
 
             steps {
                 sh '''
-                TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${org_token}" -H "Content-Type: application/vnd.api+json" "${url}/organizations/${TFE_ORG}/workspaces/${tf_workspace}" | jq -r '.data.id')"
+                TFE_WORKSPACE_ID="$(curl -v -H "Authorization: Bearer ${org_token}" -H "Content-Type: application/vnd.api+json" "${url}/organizations/${organization}/workspaces/${tf_workspace}" | jq -r '.data.id')"
                 sed "s/workspace_id/${TFE_WORKSPACE_ID}/" < $WORKSPACE/templates/run_tmpl.json  > $WORKSPACE/run.json
                 run_result=$(curl -s --header "Authorization: Bearer ${org_token}" --header "Content-Type: application/vnd.api+json" --data @$WORKSPACE/run.json ${url}/runs)
 
