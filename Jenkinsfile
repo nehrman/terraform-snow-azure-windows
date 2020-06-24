@@ -196,14 +196,14 @@ EOF
                 is_confirmable=$(echo $check_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['attributes']['actions']['is-confirmable'])")
                  echo "Run can be applied: " $is_confirmable
 
-                if [ "$run_status" == "planned" ] && [ "$is_confirmable" == "True" ]
+                if [ "$run_status" == "planned" -a "$is_confirmable" == "True" ]
                   then
                   continue=0
                   echo "There are " $sentinel_policy_count "policies, but none of them are applicable to this workspace."
                   echo "Check the run in Terraform Enterprise UI and apply there if desired."
 
                 
-                elif [[ $run_status == "errored" ]] 
+                elif [ $run_status == "errored" ] 
                 then
                   echo "Plan errored or hard-mandatory policy failed"
                   continue=0
