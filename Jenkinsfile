@@ -170,7 +170,7 @@ EOF
                 echo "Config Version ID: " $config_version_id
                 echo "Upload URL: " $upload_url
 
-                echo "Uploading configuration version using ${config_dir}.tar.gz"
+                echo "Uploading configuration version using $CONFIG_DIR.tar.gz"
                 curl -s --header "Content-Type: application/octet-stream" --request PUT --data-binary @$CONFIG_DIR.tar.gz "$upload_url"
                 '''
             }
